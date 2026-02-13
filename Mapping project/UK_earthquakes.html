@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>UK earthquake</title>
+    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css'><link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <div id="map"></div>
+
+<div class="map-title">Earthquakes in and around the UK</div>
+
+<div id="tooltip" class="tooltip" style="display:none;"></div>
+
+<div class="top-buttons">
+  <button class="control-btn" id="toggleBtn">☰ CONTROLS</button>
+  <button class="control-btn" id="infoBtn">ℹ INFO</button>
+</div>
+
+<div class="control-panel" id="controlPanel">
+  <h3>🎛️ Controls</h3>
+  
+  <div class="control-section">
+    <label>Magnitude Range</label>
+    <div class="dual-range-container">
+      <input type="range" id="magMin" min="0" max="6" step="0.1" value="0" class="range-min">
+      <input type="range" id="magMax" min="0" max="6" step="0.1" value="6" class="range-max">
+      <div class="range-track"></div>
+      <div class="range-fill" id="magFill"></div>
+    </div>
+    <div class="range-values">
+      <span><span style="font-size: 10px; color: #78909c;">MIN</span> <span id="magMinVal">0.0</span></span>
+      <span><span id="magMaxVal">6.0</span> <span style="font-size: 10px; color: #78909c;">MAX</span></span>
+    </div>
+  </div>
+
+  <div class="control-section">
+    <label>Depth Range (km)</label>
+    <div class="dual-range-container">
+      <input type="range" id="depthMin" min="0" max="30" step="1" value="0" class="range-min">
+      <input type="range" id="depthMax" min="0" max="30" step="1" value="30" class="range-max">
+      <div class="range-track"></div>
+      <div class="range-fill" id="depthFill"></div>
+    </div>
+    <div class="range-values">
+      <span><span style="font-size: 10px; color: #78909c;">MIN</span> <span id="depthMinVal">0</span></span>
+      <span><span id="depthMaxVal">30</span> <span style="font-size: 10px; color: #78909c;">MAX</span></span>
+    </div>
+  </div>
+
+  <div class="control-section">
+    <label>
+      <input type="checkbox" id="inducedOnly">
+      Show Induced Events Only
+    </label>
+  </div>
+
+  <div class="control-section">
+    <button id="applyFilters">Apply Filters</button>
+    <button id="resetFilters" style="background: #90a4ae;">Reset</button>
+  </div>
+
+  <div class="control-section">
+    <label>📅 Timeline - Select Date Range</label>
+    <div class="timeline-container">
+      <div class="timeline-chart-wrapper">
+        <div class="timeline-y-axis">
+          <span class="y-label">Events</span>
+          <span class="y-tick">30</span>
+          <span class="y-tick">20</span>
+          <span class="y-tick">10</span>
+          <span class="y-tick">0</span>
+        </div>
+        <div class="timeline-chart-area">
+          <div class="timeline-chart" id="timelineChart"></div>
+          <div class="timeline-selection" id="timelineSelection"></div>
+        </div>
+      </div>
+      <div class="timeline-x-axis" id="timelineXAxis"></div>
+      <div class="dual-range-container" style="margin-top: 15px;">
+        <input type="range" id="timelineStart" min="0" max="100" value="0" class="range-min">
+        <input type="range" id="timelineEnd" min="0" max="100" value="100" class="range-max">
+        <div class="range-track"></div>
+        <div class="range-fill" id="timelineFill"></div>
+      </div>
+      <div class="range-values" style="margin-top: 8px;">
+        <span style="font-size: 10px; color: #78909c;">START DATE</span>
+        <span style="font-size: 10px; color: #78909c;">END DATE</span>
+      </div>
+      <div class="timeline-date" id="timelineDate">All Events</div>
+    </div>
+  </div>
+
+  <div class="control-section">
+    <button id="resetView" style="background: #ff6f00;">Reset View</button>
+  </div>
+</div>
+
+<div class="info-panel" id="infoPanel">
+  <h3>ℹ️ Information</h3>
+  
+  <div class="info-section">
+    <h4>Data Source</h4>
+    <p>British Geological Survey (BGS)</p>
+  </div>
+  
+  <div class="info-section">
+    <h4>Data Range</h4>
+    <p><strong>Temporal:</strong> 2021-02-08 to 2026-02-08</p>
+    <p><strong>Geographic:</strong> United Kingdom and surrounding areas</p>
+  </div>
+  
+  <div class="info-section">
+    <h4>About This Map</h4>
+    <p>This interactive 3D web map visualizes earthquake events in and around the UK. Each point represents a seismic event, with:</p>
+    <ul>
+      <li><strong>Circle size:</strong> Earthquake magnitude</li>
+      <li><strong>Color:</strong> Depth of the earthquake source (hypocenter)</li>
+    </ul>
+  </div>
+  
+  <div class="info-section">
+    <h4>How to Explore</h4>
+    <ul>
+      <li>🖱️ <strong>Click</strong> on any earthquake to view detailed information</li>
+      <li>🔍 Use <strong>filters</strong> to narrow down events by magnitude, depth, or induced events</li>
+      <li>📅 Adjust the <strong>timeline</strong> to explore specific time periods</li>
+      <li>🗺️ <strong>Pan and zoom</strong> to examine different regions</li>
+      <li>🔄 Use <strong>Reset View</strong> to return to the default view</li>
+    </ul>
+  </div>
+</div>
+
+<div class="legend">
+  <h4>MAGNITUDE (SIZE)</h4>
+  <div class="legend-item">
+    <div class="legend-circle" style="width: 8px; height: 8px; background: #ff6f00;"></div>
+    <span>0.0 - 1.0</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-circle" style="width: 12px; height: 12px; background: #ff6f00;"></div>
+    <span>1.0 - 2.0</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-circle" style="width: 16px; height: 16px; background: #ff6f00;"></div>
+    <span>2.0 - 3.0</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-circle" style="width: 20px; height: 20px; background: #ff6f00;"></div>
+    <span>3.0+</span>
+  </div>
+  
+  <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+    <h4>DEPTH (COLOR)</h4>
+    <div class="legend-item">
+      <div class="legend-color" style="background: rgb(255,235,59);"></div>
+      <span>0-5 km</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: rgb(255,152,0);"></div>
+      <span>5-10 km</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: rgb(255,87,34);"></div>
+      <span>10-20 km</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: rgb(183,28,28);"></div>
+      <span>20+ km</span>
+    </div>
+  </div>
+</div>
+  
+  <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+    <h4>DEPTH (COLOR)</h4>
+    <div class="legend-item">
+      <div class="legend-color" style="background: rgb(255,235,59);"></div>
+      <span>0-5 km</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: rgb(255,152,0);"></div>
+      <span>5-10 km</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: rgb(255,87,34);"></div>
+      <span>10-20 km</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: rgb(183,28,28);"></div>
+      <span>20+ km</span>
+    </div>
+  </div>
+</div>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+<script src='https://unpkg.com/deck.gl@8.9.34/dist.min.js'></script>
+<script src='https://unpkg.com/@deck.gl/mapbox@8.9.34/dist.min.js'></script><script  src="./script.js"></script>
+
+  </body>
+  
+</html>
